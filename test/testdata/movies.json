@@ -1,0 +1,12 @@
+{
+	"metadata": {
+	},
+	"entries": [
+		{"title": "Ghostbusters", "genre": ["action", "comedy", "fantasy"], "year": 1984},
+		{"title": "Ice Age", "genre": ["animation", "adventure", "comedy"], "year": 2002},
+		{"title": "M*A*S*H*", "genre": ["comedy", "drama", "war"], "year": 1970},
+		{"title": "Star Trek", "genres": ["action", "adventure", "sci-fi"], "year": 1966},
+		{"title": "The Shining", "genre": ["drama", "horror"], "year": 1980},
+		{"title": "The Terminal", "genre": ["comedy", "drama", "romance"], "year": 2004}
+	]
+}

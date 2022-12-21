@@ -1,0 +1,14 @@
+{
+	"metadata": {
+	},
+	"entries": [
+		{"title": "Decameron", "author": "Giovanni Boccaccio"},
+		{"title": "Divine Comedy", "author": "Dante Alighieri"},
+		{"title": "I Promessi Sposi", "author": "Alessandro Manzoni"},
+		{"title": "Odyssey", "author": "Homer"},
+		{"title": "Robots and Empire", "author": "Isaac Asimov", "year": 1985},
+		{"title": "The Caves of Steel", "author": "Isaac Asimov", "year": 1954},
+		{"title": "The Naked Sun", "author": "Isaac Asimov", "year": 1957},
+		{"title": "The Robots of Dawn", "author": "Isaac Asimov", "year": 1983}
+	]
+}
