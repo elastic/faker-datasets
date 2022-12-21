@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "faker-datasets"
+description = "Faker provider that loads data from your datasets"
+license = {file = "LICENSE"}
+authors = [
+  {name = "Domenico Andreoli", email = "domenico.andreoli@elastic.co"}
+]
+keywords = ["faker", "fixtures", "data", "test", "mock", "generator"]
+classifiers = [
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Topic :: Software Development :: Quality Assurance",
+  "Topic :: Software Development :: Testing"
+]
+requires-python = ">=3.8"
+dependencies = [
+  "faker"
+]
+dynamic = ["version"]
+
+[project.urls]
+Homepage = "https://github.com/elastic/faker-datasets"
+"Bug Tracker" = "https://github.com/elastic/faker-datasets/issues"
+
+[tool.setuptools]
+packages = ["faker_datasets"]
+
+[tool.setuptools.dynamic]
+version = {attr = "faker_datasets.__version__"}
+
+[tool.black]
+line-length = 140
+target-version = ["py38"]
+
+[tool.isort]
+profile = 'black'

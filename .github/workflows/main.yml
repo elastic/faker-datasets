@@ -1,0 +1,99 @@
+name: Main
+
+on:
+  push:
+    tags: "v[0-9]+.[0-9]+.[0-9]+"
+    branches: "main"
+  pull_request:
+    branches: "*"
+
+jobs:
+  unit-tests:
+    name: Unit tests (${{ matrix.os }}/py${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        os: ["ubuntu-latest", "macos-latest"]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: make prereq
+
+      - name: Lint code
+        run: make lint
+
+      - name: Run tests
+        run: make test V=2
+
+  package-build:
+    name: Package build (${{ matrix.os }}/py${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        os: ["ubuntu-latest", "macos-latest"]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: make prereq
+
+      - name: Build package
+        run: make pkg-build
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: python-package-${{ matrix.python-version }}-${{ matrix.os }}
+          path: dist/*
+
+  package-tests:
+    name: Package tests (${{ matrix.os }}/py${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
+    needs: package-build
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        os: ["ubuntu-latest", "macos-latest"]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          path: code
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: python-package-${{ matrix.python-version }}-${{ matrix.os }}
+          path: dist
+
+      - name: Install package
+        run: make -f code/Makefile pkg-install
