@@ -119,7 +119,7 @@ def test_with_no_datasets(books_dataset):
 
 
 def test_malformed_root(movies_dataset):
-    for root in ("entries.", "ent..ries"):
+    for root in ("entries.", "ent..ries", ".entries[]genre", "entries[].genre"):
         msg = f"Malformed root: {root}"
         with pytest.raises(ValueError, match=re.escape(msg)) as exc:
 

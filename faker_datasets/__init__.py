@@ -21,17 +21,28 @@ def load_dataset(filename):
             raise ValueError("Unsupported format: %s", suffix)
 
 
-def chroot(dataset, path):
-    for part in path.split(".")[1:]:
+def chroot(dataset, common_path, item_path=None):
+    for part in common_path.split(".")[1:]:
         dataset = dataset[part]
+    if item_path:
+        item_path_parts = item_path.split(".")[1:]
+        new_dataset = []
+        for item in dataset:
+            for part in item_path_parts:
+                item = item[part]
+            new_dataset.append(item)
+        dataset = new_dataset
     return dataset
 
 
 def dataset(filename, root):
-    if not root.startswith(".") or (root != "." and root.endswith(".")) or root.find("..") != -1:
+    paths = root.split("[]")
+    if not all(x.startswith(".") for x in paths if x):
+        raise ValueError(f"Malformed root: {root}")
+    if root != "." and root.endswith(".") or root.find("..") != -1 or len(paths) > 2:
         raise ValueError(f"Malformed root: {root}")
     dataset = load_dataset(filename)
-    return dataset if root == "." else chroot(dataset, root)
+    return dataset if root == "." else chroot(dataset, *paths)
 
 
 def pick(faker, dataset, *, match=None, max_attempts=1000):
