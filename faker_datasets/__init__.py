@@ -34,8 +34,15 @@ def dataset(filename, root):
     return dataset if root == "." else chroot(dataset, root)
 
 
-def pick(faker, dataset):
-    return faker.random_element(dataset)
+def pick(faker, dataset, *, match=None, max_attempts=1000):
+    if not match:
+        return faker.random_element(dataset)
+    while max_attempts:
+        entry = faker.random_element(dataset)
+        if match(entry):
+            return entry
+        max_attempts -= 1
+    raise ValueError("Run out of attempts")
 
 
 class Provider(BaseProvider):
@@ -70,6 +77,23 @@ class with_datasets:
             if not hasattr(func, "datasets"):
                 func.datasets = tuple(faker.__datasets__[name] for name in self.names)
             args = func.datasets + args
+            return func(faker, *args, **kwargs)
+
+        return _func
+
+
+class with_match:
+    def __init__(self, match):
+        self.match = match
+
+    def __call__(self, func):
+        @wraps(func)
+        def _func(faker, *args, **kwargs):
+            if not hasattr(func, "datasets"):
+                if not hasattr(_func, "datasets"):
+                    raise ValueError("Use with_datasets first")
+                func.datasets = tuple([x for x in d if self.match(x)] for d in _func.datasets)
+            args = func.datasets + args[len(func.datasets) :]
             return func(faker, *args, **kwargs)
 
         return _func

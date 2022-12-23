@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 from faker import Faker
 
-from faker_datasets import Provider, add_dataset, with_datasets
+from faker_datasets import Provider, add_dataset, with_datasets, with_match
 
 
 @pytest.fixture
@@ -23,8 +23,14 @@ def fake(request, books_dataset, movies_dataset):
     @add_dataset("movies", movies_dataset, picker="movie", root=".entries")
     class TestProvider(Provider):
         @with_datasets("books", "movies")
-        def book_or_movie(self, books, movies):
-            return self.__pick__(books + movies)
+        def book_or_movie(self, books, movies, *, before=None):
+            match = None if before is None else lambda x: "year" in x and x["year"] < before
+            return self.__pick__(books + movies, match=match)
+
+        @with_datasets("books")
+        @with_match(lambda x: "year" in x and x["year"] == 1954)
+        def book_made_in_1954(self, books):
+            return self.__pick__(books)
 
     fake = Faker()
     fake.add_provider(TestProvider)
@@ -65,6 +71,38 @@ def test_dataset(fake):
         {"title": "I Promessi Sposi", "author": "Alessandro Manzoni"},
     ]:
         assert item == fake.book_or_movie()
+
+
+def test_dataset_with_match(fake):
+    for item in [
+        {"title": "Star Trek", "genres": ["action", "adventure", "sci-fi"], "year": 1966},
+        {"title": "The Caves of Steel", "author": "Isaac Asimov", "year": 1954},
+        {"title": "The Caves of Steel", "author": "Isaac Asimov", "year": 1954},
+        {"title": "M*A*S*H*", "genre": ["comedy", "drama", "war"], "year": 1970},
+        {"title": "Star Trek", "genres": ["action", "adventure", "sci-fi"], "year": 1966},
+        {"title": "M*A*S*H*", "genre": ["comedy", "drama", "war"], "year": 1970},
+        {"title": "Star Trek", "genres": ["action", "adventure", "sci-fi"], "year": 1966},
+    ]:
+        assert item == fake.book_or_movie(before=1975)
+
+    for item in [
+        {"title": "The Caves of Steel", "author": "Isaac Asimov", "year": 1954},
+        {"title": "The Caves of Steel", "author": "Isaac Asimov", "year": 1954},
+        {"title": "The Caves of Steel", "author": "Isaac Asimov", "year": 1954},
+        {"title": "The Caves of Steel", "author": "Isaac Asimov", "year": 1954},
+        {"title": "The Caves of Steel", "author": "Isaac Asimov", "year": 1954},
+        {"title": "The Caves of Steel", "author": "Isaac Asimov", "year": 1954},
+        {"title": "The Caves of Steel", "author": "Isaac Asimov", "year": 1954},
+    ]:
+        assert item == fake.book_made_in_1954()
+
+
+def test_dataset_without_match(fake):
+    match = lambda x: x.get("author", None) == "Francesco Petrarca"
+    msg = "Run out of attempts"
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        _ = fake.book(match=match, max_attempts=1)
+        pytest.fail(f"Did not raise ValueError: {msg}")
 
 
 def test_with_no_datasets(books_dataset):
