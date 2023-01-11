@@ -57,7 +57,19 @@ def pick(faker, dataset, *, match=None, max_attempts=1000):
 
 
 class Provider(BaseProvider):
-    pass
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # At the first instantiation, likely the only one, propagate
+        # the datasets to all the decorated methods needing them.
+        if hasattr(self.__class__, "__datasets__"):
+            for member in self.__class__.__dict__.values():
+                if hasattr(member, "set_datasets"):
+                    member.set_datasets(self.__class__.__datasets__)
+
+            # Pickers and decorated methods have a reference to the datasets of
+            # their interest, let's drop all the unused others and free memory.
+            del self.__class__.__datasets__
 
 
 class add_dataset:
@@ -85,11 +97,15 @@ class with_datasets:
     def __call__(self, func):
         @wraps(func)
         def _func(faker, *args, **kwargs):
-            if not hasattr(func, "datasets"):
-                func.datasets = tuple(faker.__datasets__[name] for name in self.names)
             args = func.datasets + args
             return func(faker, *args, **kwargs)
 
+        def set_datasets(datasets):
+            func.datasets = tuple(datasets[name] for name in self.names)
+            if hasattr(func, "set_datasets"):
+                func.set_datasets(datasets)
+
+        _func.set_datasets = set_datasets
         return _func
 
 
@@ -100,11 +116,15 @@ class with_match:
     def __call__(self, func):
         @wraps(func)
         def _func(faker, *args, **kwargs):
-            if not hasattr(func, "datasets"):
-                if not hasattr(_func, "datasets"):
-                    raise ValueError("Use with_datasets first")
-                func.datasets = tuple([x for x in d if self.match(x)] for d in _func.datasets)
             args = func.datasets + args[len(func.datasets) :]
             return func(faker, *args, **kwargs)
 
+        def set_datasets(datasets):
+            if not hasattr(_func, "datasets"):
+                raise ValueError("Use @with_datasets first")
+            func.datasets = tuple([x for x in d if self.match(x)] for d in _func.datasets)
+            if hasattr(func, "set_datasets"):
+                func.set_datasets(datasets)
+
+        _func.set_datasets = set_datasets
         return _func

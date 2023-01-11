@@ -1,3 +1,5 @@
+import gc
+import os
 import re
 from pathlib import Path
 
@@ -31,6 +33,10 @@ def fake(request, books_dataset, movies_dataset):
         @with_match(lambda x: "year" in x and x["year"] == 1954)
         def book_made_in_1954(self, books):
             return self.__pick__(books)
+
+    # throw the first instance away, the second must work as well
+    _fake = Faker()
+    _fake.add_provider(TestProvider)
 
     fake = Faker()
     fake.add_provider(TestProvider)
@@ -97,6 +103,28 @@ def test_dataset_with_match(fake):
         assert item == fake.book_made_in_1954()
 
 
+def test_drop_unused_datasets():
+    import psutil
+
+    @add_dataset("alerts", Path(__file__).parent / "testdata" / "alerts.json")
+    class TestProvider(Provider):
+        pass
+
+    fake = Faker()
+
+    proc = psutil.Process(os.getpid())
+    gc.collect()
+    before = proc.memory_info().rss
+
+    fake.add_provider(TestProvider)
+
+    gc.collect()
+    after = proc.memory_info().rss
+
+    print(f"Memory release: {before} -> {after} (delta: {before - after})")
+    assert before > after
+
+
 def test_dataset_without_match(fake):
     match = lambda x: x.get("author", None) == "Francesco Petrarca"
     msg = "Run out of attempts"
@@ -116,6 +144,20 @@ def test_with_no_datasets(books_dataset):
                 pass
 
         pytest.fail(f"Did not raise TypeError: {msg}")
+
+
+def test_match_without_dataset(books_dataset):
+    @add_dataset("books", books_dataset)
+    class TestProvider(Provider):
+        @with_match(lambda x: "year" in x and x["year"] == 1954)
+        def book(self, books):
+            pass
+
+    fake = Faker()
+    msg = "Use @with_datasets first"
+    with pytest.raises(ValueError, match=re.escape(msg)) as exc:
+        fake.add_provider(TestProvider)
+        pytest.fail(f"Did not raise ValueError: {msg}")
 
 
 def test_malformed_root(movies_dataset):
