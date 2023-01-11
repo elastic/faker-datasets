@@ -5,6 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "faker-datasets"
 description = "Faker provider that loads data from your datasets"
+readme = "README.md"
 license = {file = "LICENSE"}
 authors = [
   {name = "Domenico Andreoli", email = "domenico.andreoli@elastic.co"}
