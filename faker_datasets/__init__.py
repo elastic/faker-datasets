@@ -46,10 +46,11 @@ def dataset(filename, root):
 
 
 def pick(faker, dataset, *, match=None, max_attempts=1000):
+    max = len(dataset) - 1
     if not match:
-        return faker.random_element(dataset)
+        return dataset[faker.random_int(0, max)]
     while max_attempts:
-        entry = faker.random_element(dataset)
+        entry = dataset[faker.random_int(0, max)]
         if match(entry):
             return entry
         max_attempts -= 1
