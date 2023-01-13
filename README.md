@@ -43,7 +43,7 @@ fake = Faker()
 fake.add_provider(Cities)
 
 for _ in range(10):
-    # Use of the picker named in @add_dateset
+    # Use of the picker named in @add_dataset
     city = fake.city()
     print("{name} is in {country_name}".format(**city))
 ```
@@ -139,7 +139,7 @@ class CitiesFromCountry(Provider):
 
     @with_datasets("cities")
     def city(self, cities, country_name):
-        # match tells to __picker__ whether the city is good or not
+        # tell to __pick__ whether a city is good or not
         match = lambda city: city["country_name"] == country_name
         return self.__pick__(cities, match=match, max_attempts=10000)
 ```
