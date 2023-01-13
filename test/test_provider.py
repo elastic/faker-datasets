@@ -146,6 +146,20 @@ def test_with_no_datasets(books_dataset):
         pytest.fail(f"Did not raise TypeError: {msg}")
 
 
+def test_with_wrong_dataset(books_dataset):
+    @add_dataset("books", books_dataset)
+    class TestProvider(Provider):
+        @with_datasets("movie")
+        def book(self, books):
+            pass
+
+    fake = Faker()
+    msg = "dataset not found: 'movie'"
+    with pytest.raises(ValueError, match=re.escape(msg)) as exc:
+        fake.add_provider(TestProvider)
+        pytest.fail(f"Did not raise ValueError: {msg}")
+
+
 def test_match_without_dataset(books_dataset):
     @add_dataset("books", books_dataset)
     class TestProvider(Provider):

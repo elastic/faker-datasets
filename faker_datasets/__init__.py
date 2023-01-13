@@ -102,7 +102,10 @@ class with_datasets:
             return func(faker, *args, **kwargs)
 
         def set_datasets(datasets):
-            func.datasets = tuple(datasets[name] for name in self.names)
+            try:
+                func.datasets = tuple(datasets[name] for name in self.names)
+            except KeyError as e:
+                raise ValueError(f"dataset not found: '{e.args[0]}'") from None
             if hasattr(func, "set_datasets"):
                 func.set_datasets(datasets)
 
