@@ -122,7 +122,7 @@ jobs:
           path: dist
 
       - name: Publish to TestPyPI
-        uses: pypa/gh-action-pypi-publish@15c56dba361d8335944d31a2ecd17d700fc7bcbc # v1.12.2
+        uses: pypa/gh-action-pypi-publish@67339c736fd9354cd4f8cb0b744f2b82a74b5c70 # v1.12.3
         if: github.repository != env.HOME_REPO
         with:
           password: ${{ secrets.TEST_PYPI_API_TOKEN }}
@@ -131,7 +131,7 @@ jobs:
           skip_existing: true
 
       - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@15c56dba361d8335944d31a2ecd17d700fc7bcbc # v1.12.2
+        uses: pypa/gh-action-pypi-publish@67339c736fd9354cd4f8cb0b744f2b82a74b5c70 # v1.12.3
         if: github.repository == env.HOME_REPO
         with:
           password: ${{ secrets.PYPI_API_TOKEN }}
