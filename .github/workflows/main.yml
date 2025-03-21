@@ -93,7 +93,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Download artifacts
-        uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4
+        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4
         with:
           name: python-package-${{ matrix.python-version }}-${{ matrix.os }}
           path: dist
@@ -116,7 +116,7 @@ jobs:
           python-version: "3.8"
 
       - name: Download artifacts
-        uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4
+        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4
         with:
           name: python-package-3.8-ubuntu-latest
           path: dist
